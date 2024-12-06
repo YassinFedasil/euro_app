@@ -1,5 +1,5 @@
 Flask==2.3.2
 gunicorn==23.0.0
 Flask-SocketIO==5.3.2
-gevent
+gevent>=1.4
 
