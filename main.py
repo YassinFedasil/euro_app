@@ -2,7 +2,7 @@ from flask import Flask, render_template_string
 from flask_socketio import SocketIO
 import time
 import threading
-
+import os
 app = Flask(__name__)
 socketio = SocketIO(app)
 
@@ -37,8 +37,5 @@ def home():
     """, counter=counter)
 
 if __name__ == "__main__":
-    # Démarrer le compteur dans un thread séparé
-    threading.Thread(target=counter_loop, daemon=True).start()
-
-    # Utiliser Flask-SocketIO avec le serveur de développement (en ajoutant allow_unsafe_werkzeug=True pour ignorer l'avertissement)
-    socketio.run(app, host="0.0.0.0", port=5000, allow_unsafe_werkzeug=True)
+    port = os.getenv('PORT', 5000)  # Utilise le port fourni par Render, sinon 5000 par défaut
+    socketio.run(app, host="0.0.0.0", port=port, allow_unsafe_werkzeug=True)
