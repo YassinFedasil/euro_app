@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compteur avec Flask et SocketIO</title>
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>Compteur: <span id="counter">0</span></h1>
+
+    <script>
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        // Écoute des événements 'counter_update' pour mettre à jour le compteur
+        socket.on('counter_update', function(data) {
+            document.getElementById('counter').textContent = data.counter;
+        });
+    </script>
+</body>
+</html>
