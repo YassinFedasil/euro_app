@@ -1,10 +1,15 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 import threading
 import time
 import os
 import redis
+import logging
 
 app = Flask(__name__)
+
+# Réduire le niveau de log des requêtes standard
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)  # Enregistre uniquement les erreurs
 
 # Connexion à Redis
 redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')  # 'REDIS_URL' est le nom de la variable d'environnement
@@ -24,6 +29,16 @@ def increment_counter():
 thread = threading.Thread(target=increment_counter)
 thread.daemon = True
 thread.start()
+
+@app.before_request
+def filter_health_checks():
+    """
+    Filtre les requêtes de health checks basées sur le User-Agent.
+    Si la requête provient du Go-http-client (utilisé par Render), elle est ignorée.
+    """
+    user_agent = request.headers.get('User-Agent', '')
+    if "Go-http-client" in user_agent:  # Requêtes de health checks
+        return '', 200  # Réponse silencieuse pour éviter les logs inutiles
 
 @app.route('/')
 def index():
