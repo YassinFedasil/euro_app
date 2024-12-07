@@ -26,12 +26,11 @@
     <script>
         // Mise à jour du compteur toutes les 5 secondes
         setInterval(function() {
-            fetch('/')
-                .then(response => response.text())
-                .then(html => {
+            fetch('/counter')
+                .then(response => response.json())
+                .then(data => {
                     // Mise à jour du compteur dans le DOM
-                    let newCounter = html.match(/<div id="counter">(\d+)<\/div>/)[1];
-                    document.getElementById('counter').textContent = newCounter;
+                    document.getElementById('counter').textContent = data.counter;
                 });
         }, 5000);
     </script>
