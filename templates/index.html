@@ -4,24 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Compteur Incrémental</title>
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-        }
-        #counter {
-            font-size: 48px;
-            font-weight: bold;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <div id="counter">{{ counter }}</div>
+    <div class="container">
+        <h1>Compteur Incrémental</h1>
+        <div id="counter">{{ counter }}</div><br>
+        <p>Développé avec ❤️ par AZOUAGH Yassin</a></p><br>
+        <button class="btn-refresh" onclick="window.location.reload()">Rafraîchir Manuellement</button>
+    </div>
 
     <script>
         // Mise à jour du compteur toutes les 5 secondes
