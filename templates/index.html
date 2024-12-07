@@ -1,21 +1,39 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Compteur avec Flask et SocketIO</title>
-    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+    <title>Compteur Incrémental</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+        #counter {
+            font-size: 48px;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-    <h1>Compteur: <span id="counter">0</span></h1>
+    <div id="counter">{{ counter }}</div>
 
     <script>
-        var socket = io.connect('http://' + document.domain + ':' + location.port);
-
-        // Écoute des événements 'counter_update' pour mettre à jour le compteur
-        socket.on('counter_update', function(data) {
-            document.getElementById('counter').textContent = data.counter;
-        });
+        // Mise à jour du compteur toutes les 5 secondes
+        setInterval(function() {
+            fetch('/')
+                .then(response => response.text())
+                .then(html => {
+                    // Mise à jour du compteur dans le DOM
+                    let newCounter = html.match(/<div id="counter">(\d+)<\/div>/)[1];
+                    document.getElementById('counter').textContent = newCounter;
+                });
+        }, 5000);
     </script>
 </body>
 </html>
