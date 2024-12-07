@@ -7,8 +7,7 @@ import redis
 app = Flask(__name__)
 
 # Connexion à Redis
-REDIS_URL = "redis://red-ct9pvabtq21c73brn8eg:6379"
-redis_url = os.getenv(REDIS_URL, 'redis://localhost:6379/0')
+redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')  # 'REDIS_URL' est le nom de la variable d'environnement
 redis_client = redis.from_url(redis_url)
 
 # Initialiser le compteur dans Redis si non existant
