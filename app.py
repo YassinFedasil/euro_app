@@ -7,12 +7,12 @@ import logging
 
 app = Flask(__name__)
 
-# Réduire le niveau de log des requêtes standard
+# Réduire les logs non nécessaires
 log = logging.getLogger('werkzeug')
-log.setLevel(logging.ERROR)  # Enregistre uniquement les erreurs
+log.setLevel(logging.ERROR)  # Limiter les logs aux erreurs uniquement
 
 # Connexion à Redis
-redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')  # 'REDIS_URL' est le nom de la variable d'environnement
+redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
 redis_client = redis.from_url(redis_url)
 
 # Initialiser le compteur dans Redis si non existant
@@ -31,14 +31,13 @@ thread.daemon = True
 thread.start()
 
 @app.before_request
-def filter_health_checks():
+def skip_health_checks():
     """
-    Filtre les requêtes de health checks basées sur le User-Agent.
-    Si la requête provient du Go-http-client (utilisé par Render), elle est ignorée.
+    Filtrer les requêtes de health checks basées sur le User-Agent.
     """
     user_agent = request.headers.get('User-Agent', '')
-    if "Go-http-client" in user_agent:  # Requêtes de health checks
-        return '', 200  # Réponse silencieuse pour éviter les logs inutiles
+    if "Go-http-client" in user_agent:  # Requêtes de health check
+        return '', 200  # Répondre silencieusement sans générer de logs
 
 @app.route('/')
 def index():
@@ -49,4 +48,4 @@ def index():
 if __name__ == '__main__':
     # Utilisation du port fourni par Render, ou 5000 par défaut
     port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(host='0.0.0.0', port=port, debug=False)
