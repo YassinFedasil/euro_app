@@ -33,10 +33,11 @@ thread.start()
 @app.before_request
 def skip_health_checks():
     """
-    Filtrer les requêtes de health checks basées sur le User-Agent.
+    Filtrer les requêtes de health checks basées sur le User-Agent et l'URL.
     """
     user_agent = request.headers.get('User-Agent', '')
-    if "Go-http-client" in user_agent:  # Requêtes de health check
+    if "Go-http-client" in user_agent or "/health" in request.path:
+        app.logger.info(f"Skipping health check from {user_agent} on {request.path}")
         return '', 200  # Répondre silencieusement sans générer de logs
 
 @app.route('/')
