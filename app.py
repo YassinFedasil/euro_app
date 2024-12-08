@@ -61,7 +61,7 @@ schedule.every().wednesday.at("18:00").do(increment_counter_1)
 schedule.every().saturday.at("18:00").do(increment_counter_1)
 
 schedule.every().tuesday.at("06:00").do(increment_counter_2)
-schedule.every().sunday.at("14:27").do(increment_counter_2)
+schedule.every().sunday.at("15:03").do(increment_counter_2)
 
 # Fonction pour exécuter les tâches planifiées
 def run_scheduler():
@@ -111,4 +111,4 @@ def reset_counters():
 if __name__ == '__main__':
     # Utilisation du port fourni par Render, ou 5000 par défaut
     port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port, debug=False)
+    app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
