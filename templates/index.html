@@ -3,76 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Compteur Incrémental</title>
+    <title>Compteurs Incrémentaux</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
 <div class="container">
-    <h2>07/12/2024</h2>
-    <h1>Compteur Incrémental</h1>
-    <div id="counter">{{ counter }}</div>
-    <br>
-    <h3><span id="countdown">--:--:--</span></h3><br>
-    <p>Développé avec ❤️ par AZOUAGH Yassin</p><br>
+    <h1>Compteurs Incrémentaux</h1>
+
+    <!-- Compteur 1 -->
+    <div id="counter1">Compteur 1 : <strong>{{ counter1 }}</strong></div>
+    <h3 id="countdown1">--:--:--</h3>
+
+    <!-- Compteur 2 -->
+    <div id="counter2">Compteur 2 : <strong>{{ counter2 }}</strong></div>
+    <h3 id="countdown2">--:--:--</h3>
+
+    <p>Développé avec ❤️ par AZOUAGH Yassin</p>
     <button class="btn-refresh" onclick="window.location.reload()">Rafraîchir Manuellement</button>
-    <button class="btn-reset" onclick="initializeCounter()">Initialiser</button> <!-- Nouveau bouton -->
+    <button class="btn-reset" onclick="initializeCounter()">Initialiser</button>
 
 </div>
 
 <script>
-    // Fonction pour calculer le temps restant jusqu'à la prochaine incrémentation
-    function updateCountdown() {
-        const now = new Date();
-        let targetTime = new Date();
-
-        // Trouver le prochain mercredi ou samedi à 18h00
-        const daysToNextIncrementation = [3, 6];  // 3: Mercredi, 6: Samedi
-        let nextIncrementationDay = daysToNextIncrementation.find(day => {
-            return day > now.getDay();
-        });
-
-        if (nextIncrementationDay === undefined) {
-            // Si on est déjà passé pour la semaine, on prend la prochaine semaine
-            nextIncrementationDay = daysToNextIncrementation[0];
-            targetTime.setDate(targetTime.getDate() + 7); // Ajouter 7 jours pour la semaine suivante
+    // Fonction pour calculer le temps restant pour une prochaine incrémentation donnée
+    function calculateNextIncrementation(now, targetDays, targetHour) {
+        let targetTime = new Date(now);
+        let nextDay = targetDays.find(day => day > now.getDay());
+        if (nextDay === undefined) {
+            nextDay = targetDays[0]; // Repartir à la semaine suivante
+            targetTime.setDate(targetTime.getDate() + 7);
         }
+        targetTime.setHours(targetHour, 0, 0, 0);
+        targetTime.setDate(targetTime.getDate() + (nextDay - now.getDay()));
+        return targetTime;
+    }
 
-        // Définir l'heure à 18h00
-        targetTime.setHours(18, 0, 0, 0);
-        targetTime.setDate(targetTime.getDate() + (nextIncrementationDay - now.getDay()));
+    // Fonction pour mettre à jour un compte à rebours spécifique
+    function updateCountdown(elementId, targetDays, targetHour, label) {
+        const now = new Date();
+        const targetTime = calculateNextIncrementation(now, targetDays, targetHour);
 
-        // Format de la date : Jour/Mois/Année (exemple: 11/12/2024)
-        const day = targetTime.getDate().toString().padStart(2, '0');
-        const month = (targetTime.getMonth() + 1).toString().padStart(2, '0'); // Les mois commencent à 0
-        const year = targetTime.getFullYear();
-        const formattedDate = `${day}/${month}/${year}`;
-
-        // Calcul du temps restant en millisecondes
+        // Calcul du temps restant
         const timeRemaining = targetTime - now;
-
-        // Conversion en jours, heures, minutes et secondes
         const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
         const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
 
-        // Déterminer le jour de l'incrémentation (Mercredi ou Samedi)
-        const nextIncrementationDayName = nextIncrementationDay === 3 ? 'Mercredi' : 'Samedi';
-
-        // Mise à jour de l'affichage avec retour à la ligne et la date exacte
-        document.getElementById('countdown').innerHTML =
-            `Prochaine incrémentation sera le <strong>${nextIncrementationDayName} ${formattedDate}</strong><br>Il reste: : <strong>${days}</strong> jours, <strong>${hours}</strong> heures, <strong>${minutes}</strong> minutes, et <strong>${seconds}</strong> secondes.`;
+        // Mise à jour de l'affichage
+        document.getElementById(elementId).innerHTML =
+            `Prochaine incrémentation (${label}) : <strong>${days}j ${hours}h ${minutes}m ${seconds}s</strong>`;
     }
 
-    // Mettre à jour le compte à rebours toutes les secondes
-    setInterval(updateCountdown, 5000);
+    // Rafraîchir les deux décomptes toutes les secondes
+    setInterval(() => {
+        updateCountdown('countdown1', [3, 6], 18, 'Compteur 1 (Mercredi et Samedi à 18h)');
+        updateCountdown('countdown2', [2, 5], 6, 'Compteur 2 (Mardi et Vendredi à 06h)');
+    }, 1000);
 
     // Initialiser le compte à rebours
-    updateCountdown();
+    updateCountdown('countdown1', [3, 6], 18, 'Compteur 1 (Mercredi et Samedi à 18h)');
+    updateCountdown('countdown2', [2, 5], 6, 'Compteur 2 (Mardi et Vendredi à 06h)');
 
-    // Fonction pour réinitialiser le compteur dans Redis
+    // Fonction pour réinitialiser les compteurs
     function initializeCounter() {
-        fetch('/reset_counter', {
+        fetch('/reset_counters', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -80,10 +75,10 @@
         })
             .then(response => {
                 if (response.ok) {
-                    alert('Compteur réinitialisé !');
-                    location.reload();  // Recharger la page pour voir la mise à jour
+                    alert('Tous les compteurs ont été réinitialisés !');
+                    location.reload();
                 } else {
-                    alert('Erreur lors de la réinitialisation du compteur.');
+                    alert('Erreur lors de la réinitialisation des compteurs.');
                 }
             })
             .catch(error => {
@@ -92,7 +87,6 @@
             });
     }
 </script>
-
 
 </body>
 </html>

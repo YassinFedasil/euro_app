@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify,request
+from flask import Flask, render_template, jsonify, request
 import threading
 import schedule
 import time
@@ -8,6 +8,7 @@ import redis
 import logging
 from flask import send_from_directory
 from datetime import datetime
+
 app = Flask(__name__)
 
 # Réduire les logs non nécessaires
@@ -18,37 +19,49 @@ log.setLevel(logging.ERROR)  # Limiter les logs aux erreurs uniquement
 redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
 redis_client = redis.from_url(redis_url)
 
-# Initialiser le compteur dans Redis si non existant
-if not redis_client.exists('counter'):
-    redis_client.set('counter', 0)
+# Initialiser les compteurs dans Redis si non existants
+if not redis_client.exists('counter1'):
+    redis_client.set('counter1', 0)
+if not redis_client.exists('counter2'):
+    redis_client.set('counter2', 0)
 
-
-# Verrou pour éviter l'exécution simultanée du script
+# Verrou pour éviter l'exécution simultanée des scripts
 lock = threading.Lock()
 
-# Fonction pour incrémenter le compteur et exécuter le script Data_Export.py
-def increment_counter():
-    # Vérification si aujourd'hui est mercredi (3) ou samedi (6)
-    today = datetime.now().weekday()  # 0 = Lundi, 1 = Mardi, ..., 6 = Dimanche
-    if today == 2 or today == 5:  # Mercredi ou Samedi
-        with lock:
-            # Incrémenter le compteur dans Redis
-            redis_client.incr('counter')
-            current_counter = redis_client.get('counter').decode('utf-8')
-            print(f"Counter incremented to {current_counter}")  # Log pour vérifier l'incrémentation
+# Fonction pour incrémenter le compteur 1
+def increment_counter_1():
+    with lock:
+        redis_client.incr('counter1')
+        current_counter1 = redis_client.get('counter1').decode('utf-8')
+        print(f"Counter 1 incremented to {current_counter1}")
 
-            # Exécuter le script Data_Export.py
-            try:
-                subprocess.run(['python', 'Data_Export.py'], check=True)
-                print("Script Data_Export.py exécuté avec succès.")
-            except subprocess.CalledProcessError as e:
-                print(f"Erreur lors de l'exécution de Data_Export.py : {e}")
-    else:
-        print("L'export se fait en Mercredi et Samedi uniquement et pas en :",today, "day")
+        # Exécuter le script Data_Export.py
+        try:
+            subprocess.run(['python', 'DataExport.py'], check=True)
+            print("Script DataExport.py exécuté avec succès pour Counter 1.")
+        except subprocess.CalledProcessError as e:
+            print(f"Erreur lors de l'exécution de DataExport.py pour Counter 1 : {e}")
 
-# Planifier l'incrémentation chaque mercredi et samedi à 18h00
-schedule.every().wednesday.at("18:00").do(increment_counter)
-schedule.every().saturday.at("18:00").do(increment_counter)
+# Fonction pour incrémenter le compteur 2
+def increment_counter_2():
+    with lock:
+        redis_client.incr('counter2')
+        current_counter2 = redis_client.get('counter2').decode('utf-8')
+        print(f"Counter 2 incremented to {current_counter2}")
+
+        # Exécuter le script Data_Export.py
+        try:
+            subprocess.run(['python', 'DataGenerator.py'], check=True)
+            print("Script DataGenerator.py exécuté avec succès pour Counter 2.")
+        except subprocess.CalledProcessError as e:
+            print(f"Erreur lors de l'exécution de DataGenerator.py pour Counter 2 : {e}")
+
+# Planifier les incrémentations
+schedule.every().wednesday.at("18:00").do(increment_counter_1)
+schedule.every().saturday.at("18:00").do(increment_counter_1)
+
+schedule.every().tuesday.at("06:00").do(increment_counter_2)
+schedule.every().sunday.at("14:27").do(increment_counter_2)
 
 # Fonction pour exécuter les tâches planifiées
 def run_scheduler():
@@ -56,8 +69,8 @@ def run_scheduler():
         schedule.run_pending()
         time.sleep(10)  # Vérification toutes les 10 secondes
 
-# Lancer la fonction d'incrémentation dans un thread séparé
-thread = threading.Thread(target=increment_counter)
+# Lancer la fonction de planification dans un thread séparé
+thread = threading.Thread(target=run_scheduler)
 thread.daemon = True
 thread.start()
 
@@ -73,22 +86,25 @@ def skip_health_checks():
 
 @app.route('/')
 def index():
-    # Obtenir la valeur actuelle du compteur depuis Redis
-    counter = redis_client.get('counter').decode('utf-8')
-    return render_template('index.html', counter=counter)
+    # Obtenir les valeurs actuelles des compteurs depuis Redis
+    counter1 = redis_client.get('counter1').decode('utf-8')
+    counter2 = redis_client.get('counter2').decode('utf-8')
+    return render_template('index.html', counter1=counter1, counter2=counter2)
 
 @app.route('/counter')
 def counter():
-    # Obtenir la valeur actuelle du compteur depuis Redis
-    counter = redis_client.get('counter').decode('utf-8')
-    return jsonify(counter=counter)
+    # Obtenir les valeurs actuelles des compteurs depuis Redis
+    counter1 = redis_client.get('counter1').decode('utf-8')
+    counter2 = redis_client.get('counter2').decode('utf-8')
+    return jsonify(counter1=counter1, counter2=counter2)
 
-@app.route('/reset_counter', methods=['POST'])
-def reset_counter():
+@app.route('/reset_counters', methods=['POST'])
+def reset_counters():
     try:
-        # Réinitialiser la valeur du compteur à 0 dans Redis
-        redis_client.set('counter', 0)
-        return jsonify({"message": "Compteur réinitialisé"}), 200
+        # Réinitialiser les compteurs à 0 dans Redis
+        redis_client.set('counter1', 0)
+        redis_client.set('counter2', 0)
+        return jsonify({"message": "Compteurs réinitialisés"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
