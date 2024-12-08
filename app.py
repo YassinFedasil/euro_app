@@ -30,7 +30,7 @@ lock = threading.Lock()
 def increment_counter():
     # Vérification si aujourd'hui est mercredi (3) ou samedi (6)
     today = datetime.now().weekday()  # 0 = Lundi, 1 = Mardi, ..., 6 = Dimanche
-    if today == 3 or today == 6:  # Mercredi ou Samedi
+    if today == 2 or today == 5:  # Mercredi ou Samedi
         with lock:
             # Incrémenter le compteur dans Redis
             redis_client.incr('counter')
@@ -44,7 +44,7 @@ def increment_counter():
             except subprocess.CalledProcessError as e:
                 print(f"Erreur lors de l'exécution de Data_Export.py : {e}")
     else:
-        print("L'export se fait en Mercredi et Samedi uniquement.")
+        print("L'export se fait en Mercredi et Samedi uniquement et pas en :",today, "day")
 
 # Planifier l'incrémentation chaque mercredi et samedi à 18h00
 schedule.every().wednesday.at("18:00").do(increment_counter)
