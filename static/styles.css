@@ -46,8 +46,8 @@ h1 {
 }
 
 /* Style du compteur */
-#counter {
-    font-size: 72px;
+#counter1 ,counter2 {
+    font-size: 40px;
     font-weight: bold;
     color: var(--secondary-color);
     background: linear-gradient(to right, #8e44ad, #3498db);

@@ -61,7 +61,7 @@ schedule.every().wednesday.at("18:00").do(increment_counter_1)
 schedule.every().saturday.at("18:00").do(increment_counter_1)
 
 schedule.every().tuesday.at("06:00").do(increment_counter_2)
-schedule.every().sunday.at("15:03").do(increment_counter_2)
+schedule.every().sunday.at("15:30").do(increment_counter_2)
 
 # Fonction pour exécuter les tâches planifiées
 def run_scheduler():

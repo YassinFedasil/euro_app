@@ -12,7 +12,7 @@
 
     <!-- Compteur 1 -->
     <div id="counter1">Compteur 1 : <strong>{{ counter1 }}</strong></div>
-    <h3 id="countdown1">--:--:--</h3>
+    <h3 id="countdown1">--:--:--</h3><hr>
 
     <!-- Compteur 2 -->
     <div id="counter2">Compteur 2 : <strong>{{ counter2 }}</strong></div>
@@ -57,13 +57,13 @@
 
     // Rafraîchir les deux décomptes toutes les secondes
     setInterval(() => {
-        updateCountdown('countdown1', [3, 6], 18, 'Compteur 1 (Mercredi et Samedi à 18h)');
-        updateCountdown('countdown2', [2, 5], 6, 'Compteur 2 (Mardi et Vendredi à 06h)');
+        updateCountdown('countdown1', [3, 6], 18, 'Mercredi et Samedi à 18h)');
+        updateCountdown('countdown2', [2, 5], 6, 'Mardi et Vendredi à 06h: ');
     }, 1000);
 
     // Initialiser le compte à rebours
-    updateCountdown('countdown1', [3, 6], 18, 'Compteur 1 (Mercredi et Samedi à 18h)');
-    updateCountdown('countdown2', [2, 5], 6, 'Compteur 2 (Mardi et Vendredi à 06h)');
+    updateCountdown('countdown1', [3, 6], 18, 'Mercredi et Samedi à 18h)');
+    updateCountdown('countdown2', [2, 5], 6, 'Mardi et Vendredi à 06h: ');
 
     // Fonction pour réinitialiser les compteurs
     function initializeCounter() {
