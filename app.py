@@ -1,10 +1,11 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, jsonify,request
 import threading
+import schedule
 import time
+import subprocess
 import os
 import redis
 import logging
-
 app = Flask(__name__)
 
 # Réduire les logs non nécessaires
@@ -19,11 +20,35 @@ redis_client = redis.from_url(redis_url)
 if not redis_client.exists('counter'):
     redis_client.set('counter', 0)
 
-# Fonction qui incrémente le compteur toutes les 5 secondes
+
+# Verrou pour éviter l'exécution simultanée du script
+lock = threading.Lock()
+
+# Fonction pour incrémenter le compteur et exécuter le script Data_Export.py
 def increment_counter():
+    with lock:
+        # Incrémenter le compteur dans Redis
+        redis_client.incr('counter')
+        current_counter = redis_client.get('counter').decode('utf-8')
+        print(f"Counter incremented to {current_counter}")  # Log pour vérifier l'incrémentation
+
+        # Exécuter le script Data_Export.py
+        try:
+            subprocess.run(['python', 'Data_Export.py'], check=True)
+            print("Script Data_Export.py exécuté avec succès.")
+        except subprocess.CalledProcessError as e:
+            print(f"Erreur lors de l'exécution de Data_Export.py : {e}")
+
+# Planifier l'incrémentation chaque mercredi et samedi à 18h00
+schedule.every().sunday.at("01:12").do(increment_counter)
+schedule.every().wednesday.at("18:00").do(increment_counter)
+schedule.every().saturday.at("18:00").do(increment_counter)
+
+# Fonction pour exécuter les tâches planifiées
+def run_scheduler():
     while True:
-        time.sleep(5)
-        redis_client.incr('counter')  # Incrémenter le compteur dans Redis
+        schedule.run_pending()
+        time.sleep(10)  # Vérification toutes les 10 secondes
 
 # Lancer la fonction d'incrémentation dans un thread séparé
 thread = threading.Thread(target=increment_counter)

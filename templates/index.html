@@ -7,23 +7,68 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <div class="container">
-        <h1>Compteur Incrémental</h1>
-        <div id="counter">{{ counter }}</div><br>
-        <p>Développé avec ❤️ par AZOUAGH Yassin</p><br>
-        <button class="btn-refresh" onclick="window.location.reload()">Rafraîchir Manuellement</button>
-    </div>
+<div class="container">
+    <h2>07/12/2024</h2>
+    <h1>Compteur Incrémental</h1>
+    <div id="counter">{{ counter }}</div>
+    <br>
+    <h3><span id="countdown">--:--:--</span></h3><br>
+    <p>Développé avec ❤️ par AZOUAGH Yassin</p><br>
+    <button class="btn-refresh" onclick="window.location.reload()">Rafraîchir Manuellement</button>
+</div>
 
-    <script>
-        // Mise à jour du compteur toutes les 5 secondes
-        setInterval(function() {
-            fetch('/counter')
-                .then(response => response.json())
-                .then(data => {
-                    // Mise à jour du compteur dans le DOM
-                    document.getElementById('counter').textContent = data.counter;
-                });
-        }, 5000);
-    </script>
+<script>
+    // Fonction pour calculer le temps restant jusqu'à la prochaine incrémentation
+    function updateCountdown() {
+        const now = new Date();
+        let targetTime = new Date();
+
+        // Trouver le prochain mercredi ou samedi à 18h00
+        const daysToNextIncrementation = [3, 6];  // 3: Mercredi, 6: Samedi
+        let nextIncrementationDay = daysToNextIncrementation.find(day => {
+            return day > now.getDay();
+        });
+
+        if (nextIncrementationDay === undefined) {
+            // Si on est déjà passé pour la semaine, on prend la prochaine semaine
+            nextIncrementationDay = daysToNextIncrementation[0];
+            targetTime.setDate(targetTime.getDate() + 7); // Ajouter 7 jours pour la semaine suivante
+        }
+
+        // Définir l'heure à 18h00
+        targetTime.setHours(18, 0, 0, 0);
+        targetTime.setDate(targetTime.getDate() + (nextIncrementationDay - now.getDay()));
+
+        // Format de la date : Jour/Mois/Année (exemple: 11/12/2024)
+        const day = targetTime.getDate().toString().padStart(2, '0');
+        const month = (targetTime.getMonth() + 1).toString().padStart(2, '0'); // Les mois commencent à 0
+        const year = targetTime.getFullYear();
+        const formattedDate = `${day}/${month}/${year}`;
+
+        // Calcul du temps restant en millisecondes
+        const timeRemaining = targetTime - now;
+
+        // Conversion en jours, heures, minutes et secondes
+        const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+
+        // Déterminer le jour de l'incrémentation (Mercredi ou Samedi)
+        const nextIncrementationDayName = nextIncrementationDay === 3 ? 'Mercredi' : 'Samedi';
+
+        // Mise à jour de l'affichage avec retour à la ligne et la date exacte
+        document.getElementById('countdown').innerHTML =
+            `Prochaine incrémentation sera le <strong>${nextIncrementationDayName} ${formattedDate}</strong><br>Il reste: : <strong>${days}</strong> jours, <strong>${hours}</strong> heures, <strong>${minutes}</strong> minutes, et <strong>${seconds}</strong> secondes.`;
+    }
+
+    // Mettre à jour le compte à rebours toutes les secondes
+    setInterval(updateCountdown, 5000);
+
+    // Initialiser le compte à rebours
+    updateCountdown();
+</script>
+
+
 </body>
 </html>
