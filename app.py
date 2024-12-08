@@ -19,8 +19,8 @@ redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
 redis_client = redis.from_url(redis_url)
 
 # Initialiser le compteur dans Redis si non existant
-if not redis_client.exists('count'):
-    redis_client.set('count', 0)
+if not redis_client.exists('counter'):
+    redis_client.set('counter', 0)
 
 
 # Verrou pour éviter l'exécution simultanée du script
@@ -30,8 +30,8 @@ lock = threading.Lock()
 def increment_counter():
     with lock:
         # Incrémenter le compteur dans Redis
-        redis_client.incr('count')
-        current_counter = redis_client.get('count').decode('utf-8')
+        redis_client.incr('counter')
+        current_counter = redis_client.get('counter').decode('utf-8')
         print(f"Counter incremented to {current_counter}")  # Log pour vérifier l'incrémentation
 
         # Exécuter le script Data_Export.py
@@ -69,10 +69,10 @@ def skip_health_checks():
 @app.route('/')
 def index():
     # Obtenir la valeur actuelle du compteur depuis Redis
-    counter = redis_client.get('count').decode('utf-8')
-    return render_template('index.html', count=counter)
+    counter = redis_client.get('counter').decode('utf-8')
+    return render_template('index.html', counter=counter)
 
-@app.route('/count')
+@app.route('/counter')
 def counter():
     # Obtenir la valeur actuelle du compteur depuis Redis
     counter = redis_client.get('counter').decode('utf-8')

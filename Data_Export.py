@@ -157,7 +157,7 @@ def execute():
 
 def main():
     """Lance l'extraction des données."""
-    print("Début de l'extraction des données...", datetime)
+    print("Début de l'extraction des données...", datetime.now().strftime('%d/%m/%Y %H:%M:%S'))
     print("-------------------------------------------------")
     url = 'https://www.tirage-euromillions.net/euromillions/statistiques/nombre-de-sorties-des-numeros/'
     sauvegarder_html(url, DATE + '_donnees_euromillions.html')
@@ -168,7 +168,7 @@ def main():
     print("Les données EuroMillions ont été extraites avec succès.")
     execute()
     print("-------------------------------------------------")
-    print("Les données Reducmiz ont été extraites avec succès.", datetime)
+    print("Les données Reducmiz ont été extraites avec succès.", datetime.now().strftime('%d/%m/%Y %H:%M:%S'))
 
 if __name__ == "__main__":
     main()
