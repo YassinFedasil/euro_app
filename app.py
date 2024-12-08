@@ -8,8 +8,6 @@ import redis
 import logging
 from flask import send_from_directory
 from datetime import datetime
-import shutil
-
 app = Flask(__name__)
 
 # Réduire les logs non nécessaires
@@ -57,23 +55,6 @@ def run_scheduler():
 thread = threading.Thread(target=increment_counter)
 thread.daemon = True
 thread.start()
-
-def zip_directory(directory_path):
-    zip_filename = f"{directory_path}.zip"
-    shutil.make_archive(zip_filename, 'zip', directory_path)
-    return zip_filename
-
-@app.route('/download_data')
-def download_data():
-    # Le chemin vers le dossier data
-    directory = os.path.join(os.getcwd(), 'data')
-
-    # Créer l'archive ZIP du dossier data
-    zip_filename = zip_directory(directory)
-
-    # Servir l'archive ZIP à l'utilisateur
-    return send_from_directory(os.getcwd(), zip_filename, as_attachment=True)
-
 
 @app.before_request
 def skip_health_checks():

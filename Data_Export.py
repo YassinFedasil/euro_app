@@ -157,7 +157,8 @@ def execute():
 
 def main():
     """Lance l'extraction des données."""
-    print("Début de l'extraction des données...")
+    print("Début de l'extraction des données...", datetime)
+    print("-------------------------------------------------")
     url = 'https://www.tirage-euromillions.net/euromillions/statistiques/nombre-de-sorties-des-numeros/'
     sauvegarder_html(url, DATE + '_donnees_euromillions.html')
     extraire_et_enregistrer(os.path.join(data_folder, DATE, DATE + '_donnees_euromillions.html'), 'h2', 'p', DATE + '_donnees_extraits.html')
@@ -166,7 +167,8 @@ def main():
     extraire_tables(os.path.join(data_folder, DATE, DATE + '_donnees_extraits.html'), tableEtoiles, tableNombres)
     print("Les données EuroMillions ont été extraites avec succès.")
     execute()
-    print("Les données Reducmiz ont été extraites avec succès.")
+    print("-------------------------------------------------")
+    print("Les données Reducmiz ont été extraites avec succès.", datetime)
 
 if __name__ == "__main__":
     main()
