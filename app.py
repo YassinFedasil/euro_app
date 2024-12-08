@@ -28,18 +28,23 @@ lock = threading.Lock()
 
 # Fonction pour incrémenter le compteur et exécuter le script Data_Export.py
 def increment_counter():
-    with lock:
-        # Incrémenter le compteur dans Redis
-        redis_client.incr('counter')
-        current_counter = redis_client.get('counter').decode('utf-8')
-        print(f"Counter incremented to {current_counter}")  # Log pour vérifier l'incrémentation
+    # Vérification si aujourd'hui est mercredi (3) ou samedi (6)
+    today = datetime.now().weekday()  # 0 = Lundi, 1 = Mardi, ..., 6 = Dimanche
+    if today == 3 or today == 6:  # Mercredi ou Samedi
+        with lock:
+            # Incrémenter le compteur dans Redis
+            redis_client.incr('counter')
+            current_counter = redis_client.get('counter').decode('utf-8')
+            print(f"Counter incremented to {current_counter}")  # Log pour vérifier l'incrémentation
 
-        # Exécuter le script Data_Export.py
-        try:
-            subprocess.run(['python', 'Data_Export.py'], check=True)
-            print("Script Data_Export.py exécuté avec succès.")
-        except subprocess.CalledProcessError as e:
-            print(f"Erreur lors de l'exécution de Data_Export.py : {e}")
+            # Exécuter le script Data_Export.py
+            try:
+                subprocess.run(['python', 'Data_Export.py'], check=True)
+                print("Script Data_Export.py exécuté avec succès.")
+            except subprocess.CalledProcessError as e:
+                print(f"Erreur lors de l'exécution de Data_Export.py : {e}")
+    else:
+        print("L'export se fait en Mercredi et Samedi uniquement.")
 
 # Planifier l'incrémentation chaque mercredi et samedi à 18h00
 schedule.every().wednesday.at("18:00").do(increment_counter)
@@ -77,6 +82,15 @@ def counter():
     # Obtenir la valeur actuelle du compteur depuis Redis
     counter = redis_client.get('counter').decode('utf-8')
     return jsonify(counter=counter)
+
+@app.route('/reset_counter', methods=['POST'])
+def reset_counter():
+    try:
+        # Réinitialiser la valeur du compteur à 0 dans Redis
+        redis_client.set('counter', 0)
+        return jsonify({"message": "Compteur réinitialisé"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     # Utilisation du port fourni par Render, ou 5000 par défaut
